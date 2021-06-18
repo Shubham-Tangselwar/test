@@ -1,3 +1,4 @@
+//Notes - user with status 0 is inactive
 const User = require("../models/user.model");
 class UserCtrl {
   static createUser(req, res) {
@@ -18,6 +19,7 @@ class UserCtrl {
       });
   }
   // end of createUser
+
   static updateUser(req, res) {
     const { id } = req.params;
     const u = req.body;
@@ -34,6 +36,7 @@ class UserCtrl {
     });
   }
   // end of updateUser
+
   static deleteUser(req, res) {
     const { id } = req.params;
 
@@ -50,11 +53,13 @@ class UserCtrl {
     });
   }
   // end of deleteUser
+
   static getUserById(req, res) {
     const { id } = req.params;
 
     User.findOne({
       _id: id,
+      status: 1,
     })
       .then((result) => {
         res.status(200).send({ message: "User ", data: result });
@@ -69,6 +74,7 @@ class UserCtrl {
       });
   }
   // end of getUserById
+
   static getAllUsers(req, res) {
     User.find({ status: 1 })
       .then((result) => {
@@ -101,29 +107,33 @@ class UserCtrl {
           .send({ message: "Could not load the users", error: err });
       });
   }
+  // End of getAllUsersSortByCreateAt
 
   static getAllUserNearMe(req, res) {
-    const values = req.query.array.split(",");
-    if (values.length > 1) {
-      console.log(values[0]);
+    const { lang, lat } = req.query;
+    try {
       User.find({
+        status: 1,
         "address.coordinates": {
-          $geoWithin: {
-            $centerSphere: [[values[0], values[1]], 637],
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: [parseFloat(lang), parseFloat(lat)],
+            },
           },
         },
       })
         .exec()
-
         .then((result) => {
           res.status(200).send({ message: "User Near me", data: result });
         })
         .catch((err) => {
           res.status(500).send({ message: "Could Not find User", error: err });
         });
-    } else {
-      res.status(500).send({ message: "Invalid Data" });
+    } catch (e) {
+      res.status(500).send({ message: "Invalid Values" });
     }
   }
+  // End of getAllUserNearMe
 }
 module.exports = UserCtrl;
