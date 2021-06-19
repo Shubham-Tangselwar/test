@@ -3,7 +3,7 @@ const express = require("express");
 const UserCtrl = require("../controllers/user.controller");
 const router = express.Router();
 
-router.get("/byCreateAt", UserCtrl.getAllUsersSortByCreateAt); //get user based on created date
+router.get("/byCreateAt/:page", UserCtrl.getAllUsersSortByCreateAt); //get user based on created date
 
 router.get("/nearMe", UserCtrl.getAllUserNearMe); //api/v1/user/nearMe?lang=-24.2121&lat=40.145
 

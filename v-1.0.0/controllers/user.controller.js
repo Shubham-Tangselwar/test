@@ -1,12 +1,12 @@
 //Notes - user with status 0 is inactive
 const User = require("../models/user.model");
 class UserCtrl {
-  static createUser(req, res) {
+  static createUser = async (req, res) => {
     const u = req.body;
 
     const userObj = new User(u);
 
-    userObj
+    await userObj
       .save()
       .then((result) => {
         res.status(200).send({ message: "User Created", data: result });
@@ -17,13 +17,13 @@ class UserCtrl {
           .status(500)
           .send({ message: "Could not created a user", error: err });
       });
-  }
+  };
   // end of createUser
 
-  static updateUser(req, res) {
+  static updateUser = async (req, res) => {
     const { id } = req.params;
     const u = req.body;
-    User.findByIdAndUpdate(id, u, { new: true }, (err, result) => {
+    await User.findByIdAndUpdate(id, u, { new: true }, (err, result) => {
       if (err)
         res
           .status(404)
@@ -34,30 +34,35 @@ class UserCtrl {
           data: result,
         });
     });
-  }
+  };
   // end of updateUser
 
-  static deleteUser(req, res) {
+  static deleteUser = async (req, res) => {
     const { id } = req.params;
 
-    User.findByIdAndUpdate(id, { status: 0 }, { new: true }, (err, result) => {
-      if (err)
-        res
-          .status(404)
-          .send({ message: "Could not deleted the user", error: err });
-      else
-        res.status(200).send({
-          message: "User deleted successsfully",
-          data: result,
-        });
-    });
-  }
+    await User.findByIdAndUpdate(
+      id,
+      { status: 0 },
+      { new: true },
+      (err, result) => {
+        if (err)
+          res
+            .status(404)
+            .send({ message: "Could not deleted the user", error: err });
+        else
+          res.status(200).send({
+            message: "User deleted successsfully",
+            data: result,
+          });
+      }
+    );
+  };
   // end of deleteUser
 
-  static getUserById(req, res) {
+  static getUserById = async (req, res) => {
     const { id } = req.params;
 
-    User.findOne({
+    await User.findOne({
       _id: id,
       status: 1,
     })
@@ -72,11 +77,11 @@ class UserCtrl {
           error: err,
         });
       });
-  }
+  };
   // end of getUserById
 
-  static getAllUsers(req, res) {
-    User.find({ status: 1 })
+  static getAllUsers = async (req, res) => {
+    await User.find({ status: 1 })
       .then((result) => {
         res.status(200).send({ message: "User List", data: result });
       })
@@ -87,32 +92,33 @@ class UserCtrl {
           .status(404)
           .send({ message: "Could not load the users", error: err });
       });
-  }
+  };
   // end of getAllUsers
 
-  static getAllUsersSortByCreateAt(req, res) {
-    User.find({ status: 1 })
+  static getAllUsersSortByCreateAt = async (req, res) => {
+    let page = req.params.page >= 1 ? parseInt(req.params.page) : 1;
+    const limit = 3;
+    await User.find({ status: 1 })
       .sort({ createdAt: -1 })
-      .skip(10)
-      .limit(10)
+      .skip(limit * (page - 1))
+      .limit(limit)
       .exec()
       .then((result) => {
         res.status(200).send({ message: "User List", data: result });
       })
-
       .catch((err) => {
         console.log(err);
         res
           .status(404)
           .send({ message: "Could not load the users", error: err });
       });
-  }
+  };
   // End of getAllUsersSortByCreateAt
 
-  static getAllUserNearMe(req, res) {
+  static getAllUserNearMe = async (req, res) => {
     const { lang, lat } = req.query;
     try {
-      User.find({
+      await User.find({
         status: 1,
         "address.coordinates": {
           $near: {
@@ -128,12 +134,15 @@ class UserCtrl {
           res.status(200).send({ message: "User Near me", data: result });
         })
         .catch((err) => {
-          res.status(500).send({ message: "Could Not find User", error: err });
+          res.status(500).send({
+            message: "Could Not find User  invalid coordinates",
+            error: err,
+          });
         });
     } catch (e) {
-      res.status(500).send({ message: "Invalid Values" });
+      res.status(500).send({ message: "Invalid coordinates " });
     }
-  }
+  };
   // End of getAllUserNearMe
 }
 module.exports = UserCtrl;

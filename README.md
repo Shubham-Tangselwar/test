@@ -53,7 +53,7 @@
         Request type : GET
 
     6)To fetch sorted user by createdAt timestamp
-        API :http://127.0.0.1:8080/api/v1/user/byCreateAt
+        API :http://127.0.0.1:8080/api/v1/user/byCreateAt/pageNo       // replace pageNo with current page no
         Request type : GET
 
     7)To fetch all user sorted by their distance from coordinates
